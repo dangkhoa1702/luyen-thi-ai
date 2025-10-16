@@ -1,4 +1,3 @@
-
 /**
  * Hồ sơ học tập THEO MÔN:
  * - Hàng chip chọn môn ở đầu trang (nhớ lựa chọn vào localStorage).
@@ -46,7 +45,7 @@ export const LearningProfile: React.FC<LearningProfileProps> = ({ onStartPractic
   // DỮ LIỆU THEO MÔN
   const atts = attsAll.filter(a => a.subject === subject);
   const summary = summarizeProfile(atts);
-  const masteryOne = computeSubjectMastery(atts)[0]; // có thể undefined nếu rỗng
+  const masteryOne = computeSubjectMastery(atts).find(m => m.subject === subject); // Lọc đúng môn
   const topics = computeTopicStats(atts);
 
   // Accuracy 7 ngày gần nhất (0..1) cho MÔN đang chọn
@@ -56,7 +55,8 @@ export const LearningProfile: React.FC<LearningProfileProps> = ({ onStartPractic
       const start=new Date(new Date(now-d*24*3600*1000).toDateString()).getTime();
       const end=start+24*3600*1000;
       const list=atts.filter(a=>a.timestamp>=start && a.timestamp<end);
-      arr.push(list.filter(x=>x.correct).length/Math.max(1,list.length));
+      const acc = list.length > 0 ? list.filter(x => x.correct).length / list.length : 0;
+      arr.push(acc);
     } return arr;
   })();
 
@@ -193,7 +193,7 @@ export const LearningProfile: React.FC<LearningProfileProps> = ({ onStartPractic
                   <p className="text-sm opacity-80">{s.reason}</p>
                 </div>
                 <button
-                  onClick={() => onStartPractice(slug(s.subject), slug(s.topic))}
+                  onClick={() => onStartPractice(labelOf(s.subject), s.topic)}
                   className="shrink-0 px-3 py-1 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
                   title="Tạo 10 câu ôn nhanh theo chủ đề này"
                 >
@@ -256,7 +256,7 @@ export const LearningProfile: React.FC<LearningProfileProps> = ({ onStartPractic
         <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
             <div className="flex items-center justify-between mb-2">
             <h2 className="text-xl font-semibold">Xu hướng 7 ngày</h2>
-            <p className="text-sm font-bold">{Math.round(dailyAcc[dailyAcc.length-1]*100)}%</p>
+            <p className="text-sm font-bold">{dailyAcc.length > 0 ? Math.round(dailyAcc[dailyAcc.length-1]*100) : 0}%</p>
             </div>
             <p className="text-sm opacity-70 mb-2">Độ chính xác trung bình mỗi ngày của môn học.</p>
             <div className="text-blue-600 dark:text-blue-400"><Sparkline points={dailyAcc} /></div>
@@ -274,6 +274,7 @@ export const LearningProfile: React.FC<LearningProfileProps> = ({ onStartPractic
               <p className="mt-1 text-xs opacity-70">Lý do: {p.why}</p>
             </div>
           ))}
+          {summary.plan.length === 0 && <p className="text-sm opacity-70 md:col-span-3">Chưa có kế hoạch đề xuất. Hãy luyện tập thêm để AI có dữ liệu phân tích.</p>}
         </div>
       </div>
 
@@ -321,7 +322,7 @@ export const LearningProfile: React.FC<LearningProfileProps> = ({ onStartPractic
                   <td className="py-2 px-3 text-center">{trend(t.trend)}</td>
                   <td className="py-2 pl-3 text-center">
                     <button
-                      onClick={() => onStartPractice(slug(subject), slug(t.topic))}
+                      onClick={() => onStartPractice(labelOf(subject), t.topic)}
                       className="px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors"
                       title={`Tạo đề ôn tập cho chủ đề: ${t.topic}`}
                     >
