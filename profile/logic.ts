@@ -169,7 +169,7 @@ export function computeSubjectMastery(atts: Attempt[]) {
     const last7 = l.filter(a => a.timestamp >= now - 7*24*3600*1000);
     const prev7 = l.filter(a => a.timestamp <  now - 7*24*3600*1000 && a.timestamp >= now - 14*24*3600*1000);
     const a1 = last7.length > 0 ? last7.filter(x=>x.correct).length / last7.length : 0;
-    const a2 = prev7.length > 0 ? prev7.filter(x=>x.correct).length / prev7.length : a1; // Assume no change if no previous data
+    const a2 = prev7.length > 0 ? prev7.filter(x=>x.correct).length / prev7.length : a1;
     return { subject: sub, attempts, accuracy: acc, trend: Math.round((a1-a2)*100) };
   }).sort((a,b)=> labelOf(a.subject).localeCompare(labelOf(b.subject)));
 }
@@ -190,8 +190,8 @@ export function computeTopicStats(atts: Attempt[]) {
     const prev7 = l.filter(a => a.timestamp <  now - seven && a.timestamp >= now - fourteen);
     const last7Count = last7.length, prev7Count = prev7.length;
 
-    const a1 = last7Count > 0 ? (last7.filter(x=>x.correct).length / last7Count) : null;
-    const a2 = prev7Count > 0 ? (prev7.filter(x=>x.correct).length / prev7Count) : a1;
+    const a1 = last7Count ? (last7.filter(x=>x.correct).length / last7Count) : null;
+    const a2 = prev7Count ? (prev7.filter(x=>x.correct).length / prev7Count) : null;
 
     let trend: number | null = null;
     if (a1 !== null && a2 !== null && last7Count >= MIN_WIN && prev7Count >= MIN_WIN) {
